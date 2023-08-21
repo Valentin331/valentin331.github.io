@@ -1,0 +1,75 @@
+/* VARIABLES */
+:root {
+  --fade-start-opacity: 0;
+  --fade-start-transform: translateY(20px);
+  --fade-end-opacity: 1;
+  --fade-end-transform: translateY(0);
+  --fade-animation-duration: 0.5s;
+  --fade-animation-timing: ease-in-out;
+
+  --background-start-color: hsla(192, 20%, 49%, 1);
+  --background-end-color: hsla(23, 91%, 54%, 1);
+  --background-gradient: linear-gradient(0deg, var(--background-start-color) 0%, var(--background-end-color) 100%);
+}
+
+/* Fade-in animation for <p> tags on scroll */
+@keyframes fadeIn {
+  from {
+    opacity: var(--fade-start-opacity);
+    transform: var(--fade-start-transform);
+  }
+  to {
+    opacity: var(--fade-end-opacity);
+    transform: var(--fade-end-transform);
+  }
+}
+
+/* Apply the fade-in animation to <p> tags */
+p.fade-in {
+  opacity: var(--fade-start-opacity);
+  animation: fadeIn var(--fade-animation-duration) var(--fade-animation-timing) forwards !important;
+}
+
+/* Shared styles for .md-header and .md-tabs */
+.md-header, .md-tabs {
+  background: var(--background-gradient);
+  background: -moz-linear-gradient(0deg, var(--background-start-color) 0%, var(--background-end-color) 100%);
+  background: -webkit-linear-gradient(0deg, var(--background-start-color) 0%, var(--background-end-color) 100%);
+  filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#638b95", endColorstr="#f4711f", GradientType=1 );
+}
+
+/* Custom color scheme for MkDocs Material */
+[data-md-color-scheme="light"] {
+  /* Add styles specific to the "light" color scheme here */
+}
+
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #191b1c;
+  --md-default-fg-color--light: #e48b54;
+  --slate-link-color: rgb(232, 159, 113);
+  --slate-code-bg-color: hsl(195, 12%, 13%);
+
+  color: #fff;  
+
+  .md-nav__item .md-nav__link--active {
+      color:#34c9da;
+  }
+
+  .md-typeset a {
+      color: var(--slate-link-color);
+  }
+
+  --md-code-hl-comment-color: #bbbbbb;
+
+  .highlight span.filename, 
+  .highlight .o, 
+  .highlight .ow,
+  .md-typeset code {
+      color: #fff;
+      background-color: var(--slate-code-bg-color);
+  }
+
+  .highlighttable .linenos {
+      background-color: var(--slate-code-bg-color);
+  }
+}

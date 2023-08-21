@@ -1,0 +1,1858 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../kamiq/">
+      
+      
+        <link rel="next" href="../open_source/">
+      
+      <link rel="icon" href="../assets/logo.svg">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
+    
+    
+      
+        <title>Building a Secure AWS Network - Protecting Instances with Private Subnets - Valentin Kuharić</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.eebd395e.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ecc896b0.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+
+  <script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-SWS7P9Y5D4"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-SWS7P9Y5D4",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-SWS7P9Y5D4",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+
+  
+    <script>var consent;"undefined"==typeof __md_analytics||(consent=__md_get("__consent"))&&consent.analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="light" data-md-color-primary="red" data-md-color-accent="red">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#building-a-secure-aws-network-protecting-instances-with-private-subnets" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Valentin Kuharić" class="md-header__button md-logo" aria-label="Valentin Kuharić" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Valentin Kuharić
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Building a Secure AWS Network - Protecting Instances with Private Subnets
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="light" data-md-color-primary="red" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+            
+              <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+              </label>
+            
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+            
+              <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+              </label>
+            
+          
+        </form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Valentin331" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href=".." class="md-tabs__link">
+      About me
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../blog_posts/" class="md-tabs__link md-tabs__link--active">
+        Blog posts
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../open_source/" class="md-tabs__link">
+        Open source
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../cv.pdf" class="md-tabs__link">
+      Curriculum vitae
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Valentin Kuharić" class="md-nav__button md-logo" aria-label="Valentin Kuharić" data-md-component="logo">
+      
+  <img src="../assets/logo.svg" alt="logo">
+
+    </a>
+    Valentin Kuharić
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Valentin331" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        About me
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Blog posts
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Blog posts
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../blog_posts/" class="md-nav__link">
+        Blog posts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../node_ts_express_error_handling/" class="md-nav__link">
+        Beginner-friendy guide to error handling in TypeScript, Node.js, Express.js API design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kamiq/" class="md-nav__link">
+        Kamiq - a Typescript, lightweight, Nest-like, batteries-included web framework
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Building a Secure AWS Network - Protecting Instances with Private Subnets
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Building a Secure AWS Network - Protecting Instances with Private Subnets
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    Table of contents
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-introduction" class="md-nav__link">
+    1. Introduction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-disclaimer" class="md-nav__link">
+    2. Disclaimer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-introduction-to-vpcs-and-deploying-a-basic-instance" class="md-nav__link">
+    2. Introduction to VPCs and deploying a basic instance
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Introduction to VPCs and deploying a basic instance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vpcs" class="md-nav__link">
+    2.1. VPCs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-cidr-blocks-subnets-and-security-groups" class="md-nav__link">
+    2.2. CIDR blocks, subnets and security groups
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2. CIDR blocks, subnets and security groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-cidr-blocks" class="md-nav__link">
+    2.2.1. CIDR blocks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-subnets" class="md-nav__link">
+    2.2.2. Subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-security-groups" class="md-nav__link">
+    2.2.3. Security groups
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-route-tables" class="md-nav__link">
+    2.2.4. Route tables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#225-internet-gateway" class="md-nav__link">
+    2.2.5. Internet gateway
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#226-dns-resolution" class="md-nav__link">
+    2.2.6. DNS resolution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-setting-up-a-basic-deployment" class="md-nav__link">
+    2.3. Setting up a basic deployment
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3. Setting up a basic deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-creating-the-vpc" class="md-nav__link">
+    2.3.1. Creating the VPC
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-enabling-dns-resolution" class="md-nav__link">
+    2.3.2. Enabling DNS resolution
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-creating-the-subnets" class="md-nav__link">
+    2.3.3. Creating the subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#234-making-the-subnets-public-route-tables-and-internet-gateways" class="md-nav__link">
+    2.3.4. Making the subnets public (route tables and Internet gateways)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-initial-vpc-setup" class="md-nav__link">
+    2.3.3. Initial VPC setup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-creating-our-managed-backend-application" class="md-nav__link">
+    2.3.2. Creating our managed backend application
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-creating-our-database-instance" class="md-nav__link">
+    2.3.3. Creating our database instance
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#234-basic-deployment-visualisation" class="md-nav__link">
+    2.3.4. Basic deployment visualisation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-challenges-of-exposing-instances-to-the-internet" class="md-nav__link">
+    3. Challenges of exposing instances to the Internet
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Challenges of exposing instances to the Internet">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-principle-of-least-privilege" class="md-nav__link">
+    3.1. Principle of least privilege
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1. Principle of least privilege">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311-explanation" class="md-nav__link">
+    3.1.1. Explanation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312-examples" class="md-nav__link">
+    3.1.2. Examples
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-fixing-the-mistakes-new-architecture" class="md-nav__link">
+    4. Fixing the mistakes (new architecture)
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Fixing the mistakes (new architecture)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-backend-load-balancing-the-backend-nat" class="md-nav__link">
+    4.1. Backend: Load-balancing the backend + NAT
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1. Backend: Load-balancing the backend + NAT">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411-approach" class="md-nav__link">
+    4.1.1. Approach
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-creating-the-subnets" class="md-nav__link">
+    4.1.2. Creating the subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-creating-and-configuring-the-environment" class="md-nav__link">
+    4.1.3. Creating and configuring the environment
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#414-backend-design-visualisation" class="md-nav__link">
+    4.1.4. Backend design visualisation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-database-protecting-the-database-with-a-jump-host-security-group-access-rules" class="md-nav__link">
+    4.2. Database: Protecting the database with a jump host + security group access rules
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2. Database: Protecting the database with a jump host + security group access rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421-creating-subnets" class="md-nav__link">
+    4.2.1. Creating subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422-creating-the-database-instance" class="md-nav__link">
+    4.2.2. Creating the database instance
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#423-creating-the-jump-host" class="md-nav__link">
+    4.2.3. Creating the jump host
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#424-connecting-to-the-database" class="md-nav__link">
+    4.2.4. Connecting to the database
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#425-configuring-traffic-rules" class="md-nav__link">
+    4.2.5. Configuring traffic rules
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2.5. Configuring traffic rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4251-jump-host-security-group" class="md-nav__link">
+    4.2.5.1. Jump host security group
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4252-database-instance-security-group" class="md-nav__link">
+    4.2.5.2. Database instance security group
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-final-architecture-visualisation" class="md-nav__link">
+    4.3. Final architecture visualisation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-conclusion" class="md-nav__link">
+    6. Conclusion
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+      
+      
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Open source
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Open source
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../open_source/" class="md-nav__link">
+        Open source
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/Valentin331/Kamiq" class="md-nav__link">
+        Kamiq - a lightweight, TypeScript web framework
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cv.pdf" class="md-nav__link">
+        Curriculum vitae
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    Table of contents
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-introduction" class="md-nav__link">
+    1. Introduction
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-disclaimer" class="md-nav__link">
+    2. Disclaimer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-introduction-to-vpcs-and-deploying-a-basic-instance" class="md-nav__link">
+    2. Introduction to VPCs and deploying a basic instance
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Introduction to VPCs and deploying a basic instance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vpcs" class="md-nav__link">
+    2.1. VPCs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-cidr-blocks-subnets-and-security-groups" class="md-nav__link">
+    2.2. CIDR blocks, subnets and security groups
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2. CIDR blocks, subnets and security groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-cidr-blocks" class="md-nav__link">
+    2.2.1. CIDR blocks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-subnets" class="md-nav__link">
+    2.2.2. Subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-security-groups" class="md-nav__link">
+    2.2.3. Security groups
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-route-tables" class="md-nav__link">
+    2.2.4. Route tables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#225-internet-gateway" class="md-nav__link">
+    2.2.5. Internet gateway
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#226-dns-resolution" class="md-nav__link">
+    2.2.6. DNS resolution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-setting-up-a-basic-deployment" class="md-nav__link">
+    2.3. Setting up a basic deployment
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3. Setting up a basic deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-creating-the-vpc" class="md-nav__link">
+    2.3.1. Creating the VPC
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-enabling-dns-resolution" class="md-nav__link">
+    2.3.2. Enabling DNS resolution
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-creating-the-subnets" class="md-nav__link">
+    2.3.3. Creating the subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#234-making-the-subnets-public-route-tables-and-internet-gateways" class="md-nav__link">
+    2.3.4. Making the subnets public (route tables and Internet gateways)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-initial-vpc-setup" class="md-nav__link">
+    2.3.3. Initial VPC setup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-creating-our-managed-backend-application" class="md-nav__link">
+    2.3.2. Creating our managed backend application
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-creating-our-database-instance" class="md-nav__link">
+    2.3.3. Creating our database instance
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#234-basic-deployment-visualisation" class="md-nav__link">
+    2.3.4. Basic deployment visualisation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-challenges-of-exposing-instances-to-the-internet" class="md-nav__link">
+    3. Challenges of exposing instances to the Internet
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Challenges of exposing instances to the Internet">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-principle-of-least-privilege" class="md-nav__link">
+    3.1. Principle of least privilege
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1. Principle of least privilege">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311-explanation" class="md-nav__link">
+    3.1.1. Explanation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312-examples" class="md-nav__link">
+    3.1.2. Examples
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-fixing-the-mistakes-new-architecture" class="md-nav__link">
+    4. Fixing the mistakes (new architecture)
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Fixing the mistakes (new architecture)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-backend-load-balancing-the-backend-nat" class="md-nav__link">
+    4.1. Backend: Load-balancing the backend + NAT
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1. Backend: Load-balancing the backend + NAT">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411-approach" class="md-nav__link">
+    4.1.1. Approach
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-creating-the-subnets" class="md-nav__link">
+    4.1.2. Creating the subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-creating-and-configuring-the-environment" class="md-nav__link">
+    4.1.3. Creating and configuring the environment
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#414-backend-design-visualisation" class="md-nav__link">
+    4.1.4. Backend design visualisation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-database-protecting-the-database-with-a-jump-host-security-group-access-rules" class="md-nav__link">
+    4.2. Database: Protecting the database with a jump host + security group access rules
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2. Database: Protecting the database with a jump host + security group access rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421-creating-subnets" class="md-nav__link">
+    4.2.1. Creating subnets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422-creating-the-database-instance" class="md-nav__link">
+    4.2.2. Creating the database instance
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#423-creating-the-jump-host" class="md-nav__link">
+    4.2.3. Creating the jump host
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#424-connecting-to-the-database" class="md-nav__link">
+    4.2.4. Connecting to the database
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#425-configuring-traffic-rules" class="md-nav__link">
+    4.2.5. Configuring traffic rules
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2.5. Configuring traffic rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4251-jump-host-security-group" class="md-nav__link">
+    4.2.5.1. Jump host security group
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4252-database-instance-security-group" class="md-nav__link">
+    4.2.5.2. Database instance security group
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-final-architecture-visualisation" class="md-nav__link">
+    4.3. Final architecture visualisation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-conclusion" class="md-nav__link">
+    6. Conclusion
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="building-a-secure-aws-network-protecting-instances-with-private-subnets">Building a Secure AWS Network: Protecting Instances with Private Subnets</h1>
+<h2 id="table-of-contents">Table of contents</h2>
+<ul>
+<li><a href="#building-a-secure-aws-network-protecting-instances-with-private-subnets">Building a Secure AWS Network: Protecting Instances with Private Subnets</a></li>
+<li><a href="#table-of-contents">Table of contents</a></li>
+<li><a href="#1-introduction">1. Introduction</a></li>
+<li><a href="#2-disclaimer">2. Disclaimer</a></li>
+<li><a href="#2-introduction-to-vpcs-and-deploying-a-basic-instance">2. Introduction to VPCs and deploying a basic instance</a><ul>
+<li><a href="#21-vpcs">2.1. VPCs</a></li>
+<li><a href="#22-cidr-blocks-subnets-and-security-groups">2.2. CIDR blocks, subnets and security groups</a></li>
+<li><a href="#221-cidr-blocks">2.2.1. CIDR blocks</a></li>
+<li><a href="#222-subnets">2.2.2. Subnets</a></li>
+<li><a href="#223-security-groups">2.2.3. Security groups</a></li>
+<li><a href="#224-route-tables">2.2.4. Route tables</a></li>
+<li><a href="#225-internet-gateway">2.2.5. Internet gateway</a></li>
+<li><a href="#226-dns-resolution">2.2.6. DNS resolution</a></li>
+<li><a href="#23-setting-up-a-basic-deployment">2.3. Setting up a basic deployment</a></li>
+<li><a href="#231-creating-the-vpc">2.3.1. Creating the VPC</a></li>
+<li><a href="#232-enabling-dns-resolution">2.3.2. Enabling DNS resolution</a></li>
+<li><a href="#233-creating-the-subnets">2.3.3. Creating the subnets</a></li>
+<li><a href="#234-making-the-subnets-public-route-tables-and-internet-gateways">2.3.4. Making the subnets public (route tables and Internet gateways)</a></li>
+<li><a href="#233-initial-vpc-setup">2.3.3. Initial VPC setup</a></li>
+<li><a href="#232-creating-our-managed-backend-application">2.3.2. Creating our managed backend application</a></li>
+<li><a href="#233-creating-our-database-instance">2.3.3. Creating our database instance</a></li>
+<li><a href="#234-basic-deployment-visualisation">2.3.4. Basic deployment visualisation</a></li>
+</ul>
+</li>
+<li><a href="#3-challenges-of-exposing-instances-to-the-internet">3. Challenges of exposing instances to the Internet</a><ul>
+<li><a href="#31-principle-of-least-privilege">3.1. Principle of least privilege</a></li>
+<li><a href="#311-explanation">3.1.1. Explanation</a></li>
+<li><a href="#312-examples">3.1.2. Examples</a></li>
+</ul>
+</li>
+<li><a href="#4-fixing-the-mistakes-new-architecture">4. Fixing the mistakes (new architecture)</a><ul>
+<li><a href="#41-backend-load-balancing-the-backend--nat">4.1. Backend: Load-balancing the backend + NAT</a></li>
+<li><a href="#411-approach">4.1.1. Approach</a></li>
+<li><a href="#412-creating-the-subnets">4.1.2. Creating the subnets</a></li>
+<li><a href="#413-creating-and-configuring-the-environment">4.1.3. Creating and configuring the environment</a></li>
+<li><a href="#414-backend-design-visualisation">4.1.4. Backend design visualisation</a></li>
+<li><a href="#42-database-protecting-the-database-with-a-jump-host--security-group-access-rules">4.2. Database: Protecting the database with a jump host + security group access rules</a></li>
+<li><a href="#421-creating-subnets">4.2.1. Creating subnets</a></li>
+<li><a href="#422-creating-the-database-instance">4.2.2. Creating the database instance</a></li>
+<li><a href="#423-creating-the-jump-host">4.2.3. Creating the jump host</a></li>
+<li><a href="#424-connecting-to-the-database">4.2.4. Connecting to the database</a></li>
+<li><a href="#425-configuring-traffic-rules">4.2.5. Configuring traffic rules</a><ul>
+<li><a href="#4251-jump-host-security-group">4.2.5.1. Jump host security group</a></li>
+<li><a href="#4252-database-instance-security-group">4.2.5.2. Database instance security group</a></li>
+</ul>
+</li>
+<li><a href="#43-final-architecture-visualisation">4.3. Final architecture visualisation</a></li>
+</ul>
+</li>
+<li><a href="#6-conclusion">6. Conclusion</a></li>
+</ul>
+<h2 id="1-introduction">1. Introduction</h2>
+<p>This post will cover the problems, scenarios and methods of securing your instances in your AWS deployment using public and private subnets. Specifically it will cover the basics of VPCs (Virtual Private Cloud) and how you can leverage properties of a VPC together with different nodes in your network to secure your vulnerable machines from outside malicious users. We will cover different scenarios that might occur and the problems that arise with some configurations, and what tools we can leverage to create a secure network that minimizes attack surfaces.</p>
+<p>This post will not cover possible vulnerabilities that might arise from the deployed applications themselves, or architectural issues inside the network, but rather the communcation spaces of different areas and nodes inside the network, and the rules of communication between the Internet and the private network.</p>
+<h2 id="2-disclaimer">2. Disclaimer</h2>
+<p>This post will cover and mention some techniques in computer networks that the reader needs to have a high-level grasp on to follow the article well. Most of the basic concepts mentioned will be explained, and that level of understand is adequate to get the idea of the concepts mentioned but I encourage you to explore the basic ideas before diving into AWS and trying to replicate the deployments. </p>
+<p>As always, building your architecture one step at a time is more productive and will take less time then trying to have all features right from the get go.</p>
+<h2 id="2-introduction-to-vpcs-and-deploying-a-basic-instance">2. Introduction to VPCs and deploying a basic instance</h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Basic knowledge of computer networks is required.</p>
+</div>
+<h3 id="21-vpcs">2.1. VPCs</h3>
+<p>VPC (Virtual Private Cloud) is a virutal, private network you own via your AWS account. In contrast to real, physical machines, routers and switches it is virtually constructed, but the concepts remain the same. </p>
+<p>VPCs can be thought as real networks with the same features by which they provide a structured way to deploy your AWS instances. By default, it is a logically isolated network from the Internet and can be thought as a seperate network.</p>
+<p>The AWS network is a collection of Availability Zones, which are physically represented as data centers. They are interconnected and they form the AWS network. These AZs are then grouped into regions. When we put all this together, we can visually represent the different areas and overlaps like so:</p>
+<p><img alt="VPC basic visualisation" src="/blog/posts/secure_aws_network/aws_network.svg" /></p>
+<p>Visualisation shows a sample AWS region composed of three AZs. Inside the regions we have our private VPC that's spanning across three AZs (we can configure our VPC to reach one or more AZs). Using the internet gateway we can enable communication with the Internet (more on this later). </p>
+<h3 id="22-cidr-blocks-subnets-and-security-groups">2.2. CIDR blocks, subnets and security groups</h3>
+<h4 id="221-cidr-blocks">2.2.1. CIDR blocks</h4>
+<p>The basic concept of computer networks is that each node in a network is assigned a unique address by which we recognize it as a node. Just as each house in our street has a house number, each node in a computer network has a so-called <a href="https://en.wikipedia.org/wiki/IP_address">IP address</a>.</p>
+<p>Armed with that knowledge, we can represent the scope of our private network as a range of IP addresses. A good analogy would be that in a street we would assign numbers to houses from 20-44, so the same logic would apply to networks - a VPC has a range of IP addresses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Basic knowledge of IP addresses is required. Use the following <a href="https://docs.oracle.com/cd/E19504-01/802-5753/planning3-18471/index.html">link</a> to learn how IP addresses are comprised.</p>
+</div>
+<p>To keep things simple, we'll take only IPv4 addresses into account. Each IPv4 address consists of four 8 bit fields. Meaning the smallest address is 0.0.0.0 and the largest one is 255.255.255.255.</p>
+<p>This seperation of 4 distinct parts is very useful since we can easily subdevide our total IP range into sections. For example, we can say that some abstract distinct section of our network will have IP address range between 24.24.24.0 and 24.24.24.255. In this case the number of addresses this section has been assigned is 256 addresses.</p>
+<p>We need a simple, formal way of representing these ranges. Our written example is fine, but we can condense this information into a structured, standardized format that computers can also read.</p>
+<p>A CIDR block is a notation we can use to represent the IP ranges. Let's take a look at an example of a CIDR block:</p>
+<div class="arithmatex">\[25.25.25.0/24\]</div>
+<p>denotes an IP range from 25.25.25.0 to 25.25.25.255.</p>
+<p>The <span class="arithmatex">\(/24\)</span> suffix indicates the count of consecutive leading 1-bits (from left to right) in the network mask. This just means the number of bits that are fixed.</p>
+<p>Finally, we can now define our private network space with a CIDR block that has 16 static bits. An example would be:</p>
+<div class="arithmatex">\[192.168.0.0/16\]</div>
+<h4 id="222-subnets">2.2.2. Subnets</h4>
+<p>So far we have defined our VPC range. Referencing the image of above of defining a sample VPC space, we can notice different "subnets" inside the VPC.</p>
+<p>Subnets are a powerful concept of dividing our network into distinct parts. This is extremely useful since it helps us organize our nodes inside the network. </p>
+<p>Let us consider an example where we have multiple database nodes and multiple application nodes in our network. We will assign each node in the network it's own rules for accessing other parts of the network. As our network expands this would become exponentially more cumbersome and difficult to manage.</p>
+<p>Subnets allow us to set and define said rules of communcation and access to a certain range of our network, then all nodes inside the subnet will adhere to said rules. This greatly simplifies managing our nodes.</p>
+<h4 id="223-security-groups">2.2.3. Security groups</h4>
+<p>In addition to subnets, another pivotal aspect of securing our AWS architecture is the implementation of Security Groups. While subnets manage network segmentation, security groups take on the role of controlling inbound and outbound traffic at the instance level. They act as virtual firewalls that regulate the traffic allowed to and from instances associated with them.</p>
+<p>Security groups operate based on rules that explicitly permit or deny specific traffic flows. These rules can be defined in terms of allowed IP addresses, port ranges, and protocols. Unlike network access control lists (ACLs), which operate at the subnet level, security groups are associated with individual instances.</p>
+<p>By configuring security groups, you can create a strong defense mechanism to safeguard your instances from unauthorized access and potential security breaches. As you continue to explore the intricacies of AWS security, a comprehensive understanding of both subnets and security groups will be instrumental in designing a well-protected and robust environment for your applications.</p>
+<p>At this point we have introduced the vital tools of controlling network ranges and assigning communcation rules to those sub-ranges (subnets) and to the individual nodes themselves. Later we will apply these concepts on real world examples to see how to effectively use them to create a secure network.</p>
+<h4 id="224-route-tables">2.2.4. Route tables</h4>
+<p>In the vast networking landscape of AWS, route tables play a central role in directing traffic flow. They contain a set of rules, called routes, that determine how traffic is forwarded between subnets, the internet, and other connected networks.</p>
+<p>Each subnet in a VPC must be associated with a route table, which dictates the traffic routing for the subnet. A VPC is created with a main route table by default, but additional custom route tables can also be created. When a subnet doesn't have an explicitly associated route table, it falls back to the main route table.</p>
+<p>Configuring the route table accurately ensures that your network's traffic reaches its intended destination efficiently. For instance, if you want a subnet to communicate with the internet, you would modify the route table associated with that subnet to include a route to an internet gateway.</p>
+<h4 id="225-internet-gateway">2.2.5. Internet gateway</h4>
+<p>An Internet Gateway serves as a critical bridge, enabling communication between resources in your VPC and the internet. It offers a two-way portal: it allows the internet to access your instances (when permitted) and lets your instances access the internet.</p>
+<p>To facilitate this connectivity, you must attach an Internet Gateway to your VPC and then configure the appropriate route in the associated route table. With this setup, EC2 instances in your VPC can directly communicate with the internet, as long as they have an Elastic IP or Public IP.</p>
+<p>Remember, while the Internet Gateway paves the way for internet connectivity, the actual accessibility is governed by security groups and network ACLs, ensuring a layered approach to security.</p>
+<h4 id="226-dns-resolution">2.2.6. DNS resolution</h4>
+<p>The Domain Name System (DNS) translates user-friendly domain names (e.g., "www.example.com") into IP addresses that machines understand. Within a VPC in AWS, DNS resolution is automatically enabled, allowing instances to resolve domain names to their corresponding IP addresses. When EC2 instances are launched, they are assigned both private and public DNS hostnames, provided they're in a subnet set to assign public IPs. Keeping DNS resolution and hostnames enabled in a VPC is crucial for many applications, especially those dependent on DNS for communication.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>We have convered these concepts on a high-level and their implementation in a real AWS network are more complicated and introduce various little rules of application. In the later chapters we will create a real deployment and we will cover some of these, but I strongly recommend that you try to create these rules yourself. Be aware that full network configuration contains more rules and concepts.</p>
+</div>
+<h3 id="23-setting-up-a-basic-deployment">2.3. Setting up a basic deployment</h3>
+<p>Let's create a simple deployment containing a database and a backend application.</p>
+<h4 id="231-creating-the-vpc">2.3.1. Creating the VPC</h4>
+<p>We'll ignore the default VPC and create our own. We'll set our CIDR block as 24.24.0.0/24 as shown on the image below.</p>
+<p><img alt="Creating the inital VPC" src="/blog/posts/secure_aws_network/vpc_inital_1.png" /></p>
+<h4 id="232-enabling-dns-resolution">2.3.2. Enabling DNS resolution</h4>
+<p>Enable <em>DNS resolution</em> and <em>DNS hostnames</em> in the VPC settings.</p>
+<p><img alt="VPC dns action menu" src="/blog/posts/secure_aws_network/vpc-dns-1.png" /></p>
+<p><img alt="VPC settings menu" src="/blog/posts/secure_aws_network/vpc-dns-2.png" /></p>
+<h4 id="233-creating-the-subnets">2.3.3. Creating the subnets</h4>
+<p>After creating the VPC we'll create just one public subnet where our instances will live. We'll use CIDR block 24.24.1.0/24.</p>
+<p><img alt="Creating the initial subnet" src="/blog/posts/secure_aws_network/vpc_inital_subnet_1.png" /></p>
+<h4 id="234-making-the-subnets-public-route-tables-and-internet-gateways">2.3.4. Making the subnets public (route tables and Internet gateways)</h4>
+<p>By default, all created subnets are private since they don't have access to the Internet. This is due to the default route table, which sets the rules for communcation for the subnet.</p>
+<p>Firstly, let's create an Internet Gateway and assign it to our VPC.</p>
+<p><img alt="Creating the IG" src="/blog/posts/secure_aws_network/ig-1.png" /></p>
+<p><img alt="Assigning the IG to our VPC" src="/blog/posts/secure_aws_network/attach-ig-1.png" /></p>
+<p><img alt="Assigning the IG to our VPC" src="/blog/posts/secure_aws_network/attach-ig-2.png" /></p>
+<p>Now our VPC has access to traffic from the Internet.</p>
+<p>Create a new route table. We will associate this route table with the subnets we want to make public, so let's set the ruleset to the following traffic rules:</p>
+<ol>
+<li>Access to all space inside VPC</li>
+<li>Access to the internet gateway</li>
+</ol>
+<p><img alt="Creating the route table" src="/blog/posts/secure_aws_network/public-rt-1.png" /></p>
+<p><img alt="Editing route table rules" src="/blog/posts/secure_aws_network/rt-rules-1.png" /></p>
+<p>Now the nodes inside the subnet can access traffic from the Internet.</p>
+<h4 id="233-initial-vpc-setup">2.3.3. Initial VPC setup</h4>
+<p>So far, we have the following configuration:</p>
+<p><img alt="Initial VPC empty configuration" src="/blog/posts/secure_aws_network/initial_deployment.svg" /></p>
+<h4 id="232-creating-our-managed-backend-application">2.3.2. Creating our managed backend application</h4>
+<p>Now let's create our managed backend instances. The node itself that will live in our VPC is a Linux EC2 instance, but we will use Elastic Beanstalk service to manage our instances.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Elastic Beanstalk is an AWS service for managing and configuring various other AWS services, mainly used to orchestrate Linux machines. Learn more about it <a href="https://aws.amazon.com/elasticbeanstalk/">here</a>.</p>
+</div>
+<p>Select the prefered platform, in this case <a href="https://nodejs.org/en">Node</a> will be used.</p>
+<p>We'll configure it to deploy our instances inside our public subnet. Make sure to select the proper VPC and subnet. Since we'll directly serve traffic to our instance, make sure to check the <em>Public IP address</em> box to assign a public IP to our instance.</p>
+<p><img alt="Initial EB setup general config" src="/blog/posts/secure_aws_network/eb_1.png" />
+<img alt="Initial EB setup networking config" src="/blog/posts/secure_aws_network/eb_1_networking.png" /></p>
+<p>After finishing the configuration wizard, Elastic Beanstalk will spin up and configure our instances. Find the URL in the environment details screen to access the application.</p>
+<p><img alt="EB screen details" src="/blog/posts/secure_aws_network/eb_details.png" /></p>
+<p>This is how the web page should look like:</p>
+<p><img alt="EB deployed" src="/blog/posts/secure_aws_network/eb_deployed.png" /></p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You may possibly encounter an issue while deploying the envoriment with misconfigured service roles. Take a look at this <a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-instanceprofile.html">link</a> for more information. <strong>Dont forget to select the instance profile!</strong></p>
+</div>
+<h4 id="233-creating-our-database-instance">2.3.3. Creating our database instance</h4>
+<p>To demonstrate a basic deployment of a database, we will deploy an instance running a a relational database software. AWS provides a service for doing exactly that, called RDS (Relational Database Service). RDS wizard requires that RDS instances live in a subnet spread across two availability zones. Specifically we're required to create a <a href="">subnet group</a>.</p>
+<p>So far we have created only one public subnet. Navigate to the VPC service and creat another public subnet. <strong>Make sure it's placed in a different AZ compared to the first public subnet!</strong> Now that we have two public subnets in different AZs, navigate to RDS service and create a database subnet group that includes these two subnets.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Remember to assign the correct route table to the subnet, otherwise no traffic from the Internet can pass through to the instance.</p>
+</div>
+<p><img alt="2nd subnet" src="/blog/posts/secure_aws_network/subnet-2.png" /></p>
+<p><img alt="creating the subnet group" src="/blog/posts/secure_aws_network/db-subnet-groups-1.png" /></p>
+<p>Now we're ready to finally create our database instance. Navigate to the RDS service and launch the instance creation wizard. Make sure to properly configure the connectivity settings, including the correct VPC and subnet group. Make sure to check enable <em>Public access</em>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For testing purposes I recommend using the <em>free tier</em> preset for instance class and storage.</p>
+</div>
+<p><img alt="Database creating wizard 1" src="/blog/posts/secure_aws_network/db-1.png" />
+<img alt="Database creating wizard 2" src="/blog/posts/secure_aws_network/db-2.png" />
+<img alt="Database creating wizard 3" src="/blog/posts/secure_aws_network/db-3.png" /></p>
+<h3 id="234-basic-deployment-visualisation">2.3.4. Basic deployment visualisation</h3>
+<p>So far, we have created the following configuration:</p>
+<p><img alt="Basic deployment visualisation" src="/blog/posts/secure_aws_network/basic_deployment.svg" /></p>
+<h2 id="3-challenges-of-exposing-instances-to-the-internet">3. Challenges of exposing instances to the Internet</h2>
+<p>Our current deployment is valid and works. But when we're designing a system for a production application we must always take security into account. With enough traffic we will eventually encounter malicious users and minimizing potential security risks is a must.</p>
+<h3 id="31-principle-of-least-privilege">3.1. Principle of least privilege</h3>
+<h4 id="311-explanation">3.1.1. Explanation</h4>
+<p>The Principle of Least Privilege (PoLP) dictates that in a computing environment, all nodes, modules, processes, users, or programs should have access only to the precise information required to execute their tasks. By confining privileges and access rights, we inherently limit the potential vulnerabilities of our system. This is a very powerful concept for minimizing possible attack surfaces our system design might leave open.</p>
+<p>Imagine a network comprising several nodes. If an attacker compromises one node, the extent of their reach largely depends on the privileges associated with that node.  Considering the principle of least privilage and applying it to our network, the intruder's access is limited, since they can potentially have access to a minimal amount of information in our network, as opposed to the scenario where nodes have unrestricted access, granting the attacker access tothe entirety of our network.</p>
+<p>This idea can be taken as far as you want, for instance specify rules for read-only or write-only action.</p>
+<h4 id="312-examples">3.1.2. Examples</h4>
+<p><strong>User Accounts on Operating Systems</strong>: On most operating systems, there are user accounts with varying privileges. Typically, there are administrator accounts with full system access and standard user accounts with limited access. If a standard user account is compromised, the attacker can't make system-wide changes. This limitation is due to PoLP; the standard account only has the necessary privileges to run applications and not to modify system settings.</p>
+<p><strong>Database Management</strong>: In a database system, not all users need the ability to edit or delete tables. Some might only require read-only access, while others might need more comprehensive permissions for data entry. By tailoring access to individual roles, you can ensure that even if a read-only account gets compromised, the attacker cannot alter the database's data or structure.</p>
+<p><strong>Web Applications</strong>: Consider a web application where users can view, post, and edit content. While every user can view posts, perhaps only the original poster can edit or delete their own content. Implementing PoLP ensures that even if a user's session is hijacked, the malicious actor can only affect the content associated with that specific user and not content from other users.</p>
+<h2 id="4-fixing-the-mistakes-new-architecture">4. Fixing the mistakes (new architecture)</h2>
+<p>So far we have created a working deployment and we have explained the security risks associated with it. Now we'll introduce new concepts in computer networking and apply them to create a secure environment for our applications. We will be sticking to an example of an application deployment and a database deployment.</p>
+<h3 id="41-backend-load-balancing-the-backend-nat">4.1. Backend: Load-balancing the backend + NAT</h3>
+<h4 id="411-approach">4.1.1. Approach</h4>
+<p>Our current deployment consists of a Linux machine with a public IP, directly accessible from the internet. We aim to enhance its security by placing it within a private network. Instead of direct access, we'll introduce a gatekeeper - in our case, a <a href="https://en.wikipedia.org/wiki/Load_balancing_(computing)">load balancer</a>  - that mediates communication between the internet and our private machine.</p>
+<p>We'll set up an Elastic Beanstalk environment to launch machines in a private subnet running our sample Node application. Through the configuration settings, we'll ensure the environment is load-balanced, with the load balancer situated in a public subnet. This setup allows the load balancer to be the public entry point, directing traffic to our private infrastructure. Although the EC2 instances are in a private subnet, they still need internet access for updates. To accommodate this, we'll associate them with a NAT gateway in the private subnet, allowing only incoming traffic.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Learn more about load balancers <a href="https://www.nginx.com/resources/glossary/load-balancing/">here</a>.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Learn more about NAT gateways and how they work <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html">here</a>.</p>
+</div>
+<h4 id="412-creating-the-subnets">4.1.2. Creating the subnets</h4>
+<p>To create our architecture, we need two public subnets for our load balancer. Create two appropriately names public subnets with the method shown in this article. We will also need one private subnet for our application EC2 instances, so create one private subnet.</p>
+<p>Create a NAT gateway and add it to the private subnet.</p>
+<p><img alt="NAT gateway" src="../blog/posts/secure_aws_network/nat-1.png" /></p>
+<h4 id="413-creating-and-configuring-the-environment">4.1.3. Creating and configuring the environment</h4>
+<p>Once the subnets are ready to go, navigate to Elastic Beanstalk and launch the environment creation wizard. Choose the environment name and configure the environment:</p>
+<ol>
+<li>Choose a sample Node app as the desired platform</li>
+<li>In the networking settings:</li>
+<li>Choose your VPC</li>
+<li>Choose the desired private subnet</li>
+<li>Choose the appropriate security group</li>
+<li>In the <em>Instance traffic and scaling</em>:</li>
+<li>Choose the <em>environment type</em> as <em>load balanced</em></li>
+<li>Set the load balancer as public</li>
+<li>Select the load balancer public subnets created earlier</li>
+</ol>
+<p>The Elastic Beanstalk wizard will do the rest. After a successfull launch, the application should be accessible via the EB public URL.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>The mentioned configuration may take a substantial time to launch (10 minutes or more). Be patient.</p>
+</div>
+<h4 id="414-backend-design-visualisation">4.1.4. Backend design visualisation</h4>
+<p><img alt="Secure EB deployment w/ load balancer" src="/blog/posts/secure_aws_network/secure_eb.svg" /></p>
+<h3 id="42-database-protecting-the-database-with-a-jump-host-security-group-access-rules">4.2. Database: Protecting the database with a jump host + security group access rules</h3>
+<h4 id="421-creating-subnets">4.2.1. Creating subnets</h4>
+<p>Firstly, let's create the private subnets for the database. We need at least two. In this case we'll them <em>private-db-subnet-1</em> and <em>private-db-subnet-2</em> and assign IPv4 CIDR blocks of <span class="arithmatex">\(24.24.2.0/24\)</span> and <span class="arithmatex">\(24.24.3.0/24\)</span>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Make sure the subnets have different Availability zones.</p>
+</div>
+<p>Then create the subnet group for the new database instance, consisting of these two subnets.</p>
+<p>We'll need a public instance for our jump host, which we'll cover shortly. Create a public instance following the method shown earlier. Consider naming it appropriately, in this case we'll choose the name <em>public-db-jump-host-subnet-1</em>.</p>
+<h4 id="422-creating-the-database-instance">4.2.2. Creating the database instance</h4>
+<p>Create an RDS instance in your VPC and set the correct subnet group. At this point, the RDS instance will launch but it won't be accessible since it lives in private subnet space. We will make it accessible from the Internet via a jump host.</p>
+<h4 id="423-creating-the-jump-host">4.2.3. Creating the jump host</h4>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A jump host configuration is not an ideal approach, but it's a great learning example to grasp different traffic rules and the idea of protecting network instances. It is a potential point of vulnerability as it's exposed to the internet. It's crucial to harden its security, apply timely patches, and follow best practices to minimize risks.</p>
+</div>
+<p>A jump host (or <em>bastion host</em>) is a special-purpose node (computer, virutal machine) in a computer network configured to withstand attacks and act as a gateway to access resources inside a private network from the external world. </p>
+<p>In this context, we'll utilize the jump host as a bridge to connect to our RDS instance situated in a private subnet.</p>
+<p>We'll configure our jump host as a Linux machine using the EC2 service. We'll launch a simple EC2 instance in the public subnet, exposed to the Internet. By configuring the SSH keys an outside user will be able to securely connect to a public node in our network, from which they'll be able to access protected nodes.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Basic knowledge of SSH cryptographic protocol is required. Learn the basics <a href="https://www.geeksforgeeks.org/introduction-to-sshsecure-shell-keys/">here</a>.</p>
+</div>
+<p>Let's create a Linux machine with EC2. </p>
+<ol>
+<li>Choose instance name</li>
+<li>Use <em>Amazon Linux 2023 64-bit</em> image or newer</li>
+<li>Choose <em>t3.micro</em> instance type (free tier eligible)</li>
+<li>Create a new key pair for login (by creating a new pair, the browser will prompt you to download the key)</li>
+<li>Configure the network settings</li>
+<li>Select your VPC</li>
+<li>Select the jump host public subnet as the desired subnet</li>
+<li>Set <em>Auto-assign public IP</em> to <em>Enable</em></li>
+<li>Make sure the wizard assigns a new security group tp the instance by selecting the option <em>Create security group</em></li>
+<li>Make sure the inbound security group rules allow SSH traffic on port 22 from anywhere (more on this later)</li>
+<li>Submit the form</li>
+</ol>
+<p>Now the EC2 instance should boot up within a couple of minutes.</p>
+<h4 id="424-connecting-to-the-database">4.2.4. Connecting to the database</h4>
+<p>Now our jump host and database should be properly configured for the outside user to gain access via the secure node. To connect to the database the user can SSH into the secure node like so:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a>ssh ec2-user@&lt;MACHINE IP ADDRESS&gt; -i &lt;PATH_TO_PRIVATE_KEY&gt;
+</span></code></pre></div></td></tr></table></div>
+<p>with the desired output:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-1"> 1</a></span>
+<span class="normal"><a href="#__codelineno-1-2"> 2</a></span>
+<span class="normal"><a href="#__codelineno-1-3"> 3</a></span>
+<span class="normal"><a href="#__codelineno-1-4"> 4</a></span>
+<span class="normal"><a href="#__codelineno-1-5"> 5</a></span>
+<span class="normal"><a href="#__codelineno-1-6"> 6</a></span>
+<span class="normal"><a href="#__codelineno-1-7"> 7</a></span>
+<span class="normal"><a href="#__codelineno-1-8"> 8</a></span>
+<span class="normal"><a href="#__codelineno-1-9"> 9</a></span>
+<span class="normal"><a href="#__codelineno-1-10">10</a></span>
+<span class="normal"><a href="#__codelineno-1-11">11</a></span>
+<span class="normal"><a href="#__codelineno-1-12">12</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1"></a>   ,     #_
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2"></a>   ~\_  ####_        Amazon Linux 2023
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3"></a>  ~~  \_#####\
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4"></a>  ~~     \###|
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5"></a>  ~~       \#/ ___   https://aws.amazon.com/linux/amazon-linux-2023
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6"></a>   ~~       V~&#39; &#39;-&gt;
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7"></a>    ~~~         /
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8"></a>      ~~._.   _/
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9"></a>         _/ _/
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10"></a>       _/m/&#39;
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11"></a>Last login: Mon Aug 21 12:54:33 2023 from &lt;REMOTE USER IP&gt;
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12"></a>[ec2-user@ip-&lt;VPC PRIVATE NETWORK IP&gt; ~]$ 
+</span></code></pre></div></td></tr></table></div>
+<p>This confirms correct configuration of the jump host.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For .pem files used for SSH access, you should set the permissions to be read-only by the owner. This ensures that the private key remains confidential and isn't accidentally modified.</p>
+<p>You can set the correct permissions using the <code>chmod</code> command:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1"></a>chmod 400 /path/to/your_key.pem
+</span></code></pre></div></td></tr></table></div>
+</div>
+<p>To securely access a database on a remote machine without exposing it directly, we can create an SSH tunnel. This technique involves forwarding a local port on your machine to a port on the remote database server, essentially making the database accessible as if it were running locally.</p>
+<p>The command for setting up this SSH tunnel is:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1">1</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1"></a>ssh -L _LOCAL_PORT_:_REMOTE_DATABASE_HOST_:_REMOTE_DATABASE_PORT_ _JUMP_HOST_USERNAME_@_JUMP_HOST_PUBLIC_IP_ -i _PATH_TO_PRIVATE_KEY_
+</span></code></pre></div></td></tr></table></div>
+<ul>
+<li><strong><em>LOCAL_PORT</em></strong>: A free port on your local machine.</li>
+<li><strong><em>REMOTE_DATABASE_HOST</em></strong>: The hostname or IP address where the database resides.</li>
+<li><strong><em>REMOTE_DATABASE_PORT</em></strong>: The port the database listens to.</li>
+<li><strong><em>JUMP_HOST_USERNAME</em></strong>: Username associated with the jump (or bastion) host.</li>
+<li><strong><em>JUMP_HOST_PUBLIC_IP</em></strong>: The jump host's public IP address.</li>
+<li><strong><em>PATH_TO_PRIVATE_KEY</em></strong>: Directory path to the SSH private key for authentication.</li>
+</ul>
+<p>After setting up the SSH tunnel, connect to the database using your desired database tool or API as if it's on your local machine. Access it at <code>localhost:_LOCAL_PORT_</code>.</p>
+<h4 id="425-configuring-traffic-rules">4.2.5. Configuring traffic rules</h4>
+<p>We have demonstrated how to protect a private database instance by not exposing it to the Internet directly, but rather provide access via a jump host. This is a huge improvement from the original design but there is still room to improve. We will be specfically focusing on security group rules for the jump host and the database to futher comply with the <a href="#31-principle-of-least-privilege">Principle of least privilege</a>.</p>
+<h5 id="4251-jump-host-security-group">4.2.5.1. Jump host security group</h5>
+<p>Let's navigate to EC2, select the jump host, and review its security group.</p>
+<p>So far, the jump host listens only for SSH traffic, which is the desired behavior. The potential security risk is that any user, from anywhere in the world, can attempt to connect to the jump host, denoted by the <span class="arithmatex">\(0.0.0.0/0\)</span> source rule. While SSH itself is secure, limiting the source addresses can significantly reduce the risk of brute-force attacks. Our current outbound rules allow an attacker to potentially reach other parts of the network.</p>
+<p><strong>For inbound rules:</strong></p>
+<ol>
+<li>Limit Source: Tighten the inbound rules by allowing only trusted IP addresses, such as your company's VPN, specific employee IP addresses, or other controlled networks. This minimizes the exposure to potential attackers by narrowing down the list of IPs that can initiate a connection.</li>
+</ol>
+<p><strong>For outbound rules:</strong></p>
+<ol>
+<li>
+<p>Limit Destination: Outbound traffic from the jump host should be restricted to the necessary destinations. Specifically, it should be able to communicate only with the private IP address of the database instance and any other essential services. This configuration ensures that even if the jump host is compromised, the attacker can't use it as a platform to target other unrelated resources or systems.</p>
+</li>
+<li>
+<p>Specify Port: While the jump host primarily serves as a bridge to the database, ensure that it's only allowed to communicate on the specific port your database listens on. This minimizes potential misuse of the jump host.</p>
+</li>
+</ol>
+<h5 id="4252-database-instance-security-group">4.2.5.2. Database instance security group</h5>
+<p>Let's navigate to RDS, select our database instance, and review its associated security group rules:</p>
+<p><strong>For inbound rules:</strong></p>
+<ol>
+<li>Limit Source: By default, avoid having a wide-open $0.0.0.0/0 source rule. Instead, only allow inbound traffic from trusted sources. The primary source should be the jump host's private IP, ensuring direct connectivity only through the jump host. Depending on your setup, you might also consider connections from other essential components or services.
+Specify Port: Ensure that only the specific port your database is listening on is open. This further reduces potential vulnerabilities.</li>
+</ol>
+<p><strong>For outbound rules:</strong></p>
+<ol>
+<li>
+<p>Limit Destination: Your database instance should have a limited scope for outbound connections. It's best to only allow the necessary communication, which might include connecting to specific services or updates. Restricting the outbound traffic ensures that data can't be unexpectedly exfiltrated.</p>
+</li>
+<li>
+<p>No Wildcard Rules: Avoid using wildcard rules that allow the database to connect to any IP on any port. Remember, you want to ensure that if your database were ever compromised, its potential to do harm is restricted.</p>
+</li>
+</ol>
+<h3 id="43-final-architecture-visualisation">4.3. Final architecture visualisation</h3>
+<p><img alt="Full secure deployment" src="/blog/posts/secure_aws_network/full_secure_deployment.svg" /></p>
+<h2 id="6-conclusion">6. Conclusion</h2>
+<p>Securing cloud deployments is an intricate task that requires methodical planning and execution. Throughout this guide, we've taken a dive into some foundational steps for improving the security of AWS Elastic Beanstalk and RDS instances. By placing our EB instances in private subnets, harnessing load balancers in publicly accessible spaces, and adding an additional layer of protection to our RDS databases with a jump host, we've made significant strides in fortifying cloud deployments on AWS.</p>
+<p>However, it's essential to understand that this is merely an introductory guide. Real-world production environments often demand a myriad of additional techniques, strategies, and concepts to ensure comprehensive protection such as firewall configurations, intrusion detection systems, monitoring and incident response mechanisms.</p>
+<p>We have layed a strong foundation, but the battle is ongoing and there are always new methods and concepts to be learned and implemented. The tools and techniques one should use are determined by the requirements themselves.</p>
+<p>The following configuration is a great starter guide for understanding basic network principles and how to begin designing an application deployment on AWS. By incoprorating more advances techniques one can create a production-ready environment faster then ever before. I hope you found this guide enlightening. Best of luck on your AWS journey!</p>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../kamiq/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Kamiq - a Typescript, lightweight, Nest-like, batteries-included web framework" rel="prev">
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Kamiq - a Typescript, lightweight, Nest-like, batteries-included web framework
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../open_source/" class="md-footer__link md-footer__link--next" aria-label="Next: Open source" rel="next">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Open source
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 Valentin Kuharić
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://dev.to/valentinkuharic" target="_blank" rel="noopener" title="dev.to" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M120.12 208.29c-3.88-2.9-7.77-4.35-11.65-4.35H91.03v104.47h17.45c3.88 0 7.77-1.45 11.65-4.35 3.88-2.9 5.82-7.25 5.82-13.06v-69.65c-.01-5.8-1.96-10.16-5.83-13.06zM404.1 32H43.9C19.7 32 .06 51.59 0 75.8v360.4C.06 460.41 19.7 480 43.9 480h360.2c24.21 0 43.84-19.59 43.9-43.8V75.8c-.06-24.21-19.7-43.8-43.9-43.8zM154.2 291.19c0 18.81-11.61 47.31-48.36 47.25h-46.4V172.98h47.38c35.44 0 47.36 28.46 47.37 47.28l.01 70.93zm100.68-88.66H201.6v38.42h32.57v29.57H201.6v38.41h53.29v29.57h-62.18c-11.16.29-20.44-8.53-20.72-19.69V193.7c-.27-11.15 8.56-20.41 19.71-20.69h63.19l-.01 29.52zm103.64 115.29c-13.2 30.75-36.85 24.63-47.44 0l-38.53-144.8h32.57l29.71 113.72 29.57-113.72h32.58l-38.46 144.8z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/valentin-kuharic-4468a81a4/" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/Valentin331" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-consent" data-md-component="consent" id="__consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            
+
+  
+    
+  
+
+
+  
+    
+  
+
+
+
+  
+
+
+<h4>Cookie consent</h4>
+<p>I'm use cookies to recognize your repeated visits and preferences and whether users find what they're searching for. With your consent, you're helping me make this webpage better.</p>
+<input class="md-toggle" type="checkbox" id="__settings" >
+<div class="md-consent__settings">
+  <ul class="task-list">
+    
+      
+      
+        
+        
+      
+      <li class="task-list-item">
+        <label class="task-list-control">
+          <input type="checkbox" name="analytics" checked>
+          <span class="task-list-indicator"></span>
+          Google Analytics
+        </label>
+      </li>
+    
+      
+      
+        
+        
+      
+      <li class="task-list-item">
+        <label class="task-list-control">
+          <input type="checkbox" name="github" checked>
+          <span class="task-list-indicator"></span>
+          GitHub
+        </label>
+      </li>
+    
+  </ul>
+</div>
+<div class="md-consent__controls">
+  
+    
+      <button class="md-button md-button--primary">Accept</button>
+    
+    
+    
+  
+    
+    
+    
+      <label class="md-button" for="__settings">Manage settings</label>
+    
+  
+</div>
+          </form>
+        </aside>
+      </div>
+      <script>var consent=__md_get("__consent");if(consent)for(var input of document.forms.consent.elements)input.name&&(input.checked=consent[input.name]||!1);else"file:"!==location.protocol&&setTimeout(function(){document.querySelector("[data-md-component=consent]").hidden=!1},250);var action,form=document.forms.consent;for(action of["submit","reset"])form.addEventListener(action,function(e){if(e.preventDefault(),"reset"===e.type)for(var n of document.forms.consent.elements)n.name&&(n.checked=!1);__md_set("__consent",Object.fromEntries(Array.from(new FormData(form).keys()).map(function(e){return[e,!0]}))),location.hash="",location.reload()})</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.path", "navigation.indexes", "navigation.top", "navigation.tabs", "navigation.tracking", "toc.follow", "search.highlight", "search.share", "navigation.expand", "navigation.footer"], "search": "../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.220ee61c.min.js"></script>
+      
+        
+          <script src="../javascripts/mathjax.js"></script>
+        
+      
+        
+          <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        
+      
+        
+          <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        
+      
+    
+  </body>
+</html>

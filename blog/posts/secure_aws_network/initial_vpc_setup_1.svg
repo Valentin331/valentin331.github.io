@@ -1,0 +1,17 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 659.33203125 554.4296875" width="659.33203125" height="554.4296875">
+  <!-- svg-source:excalidraw -->
+  
+  <defs>
+    <style class="style-fonts">
+      @font-face {
+        font-family: "Virgil";
+        src: url("https://excalidraw.com/Virgil.woff2");
+      }
+      @font-face {
+        font-family: "Cascadia";
+        src: url("https://excalidraw.com/Cascadia.woff2");
+      }
+    </style>
+    
+  </defs>
+  <g stroke-linecap="round" transform="translate(10 165.12890625) rotate(0 319.666015625 125.63671875)"><path d="M0.27 -0.23 C145.11 -0.39, 290.33 -0.17, 639.49 -0.22 M-0.21 -0.02 C239.73 -0.46, 479.19 -1.04, 639.7 -0.05 M639.03 1.15 C638.47 92.05, 638.24 181.5, 638.73 249.88 M639.7 -0.75 C638.1 87.15, 637.88 172.91, 638.73 250.89 M639.46 250.5 C427.64 248.86, 215.73 250.09, 0.42 250.91 M639.73 251.07 C469.99 251.92, 301.16 252.07, -0.4 251.26 M-1.42 252.34 C-1.43 171.17, -1.14 87.35, 0.65 -0.37 M-0.28 250.78 C-0.99 193.41, -0.17 134.2, 0.8 0.78" stroke="#2f9e44" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(196.87109375 211.52734375) rotate(0 122.431640625 88.92578125)"><path d="M-1.08 0.5 C69.56 2.29, 138.42 1.05, 246.09 0.11 M0.04 0.74 C67.36 1.9, 135.7 1.88, 245.29 0.75 M246.37 1.64 C244.91 72.67, 245.08 142.98, 243.47 178.41 M244.18 -0.07 C243.71 38.19, 244.83 76.78, 244.93 178.62 M246.43 178.26 C155.68 175.44, 69.21 176.74, 1.61 177.33 M245.2 177.91 C184.86 178.08, 124.58 178.87, 0.7 177.69 M-0.12 179.68 C-1.38 132.38, -1.33 86.01, 0.88 -0.97 M-0.34 177.45 C0.12 138.98, -1.42 101.09, -0.48 0.88" stroke="#f08c00" stroke-width="2" fill="none"></path></g><g transform="translate(12.09765625 137.4609375) rotate(0 18.219985961914062 12.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="20px" fill="#2f9e44" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">VPC</text></g><g transform="translate(126.49609375 10) rotate(0 86.48992919921875 12.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="20px" fill="#1971c2" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">Availability zone 1</text></g><g transform="translate(196.91015625 180.875) rotate(0 71.89993286132812 12.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="20px" fill="#f08c00" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">Public subnet 1</text></g><g stroke-linecap="round" transform="translate(124.234375 42.3203125) rotate(0 192.884765625 251.0546875)"><path d="M0.21 0.72 C107.27 1.58, 213.09 0.96, 384.76 -0.87 M386.4 -0.05 C385.24 132.48, 385.84 265.84, 386.31 501.76 M386.83 503.01 C262.06 503.6, 137.17 505.17, -0.43 502.92 M-0.11 502.55 C0.86 393.58, 0.53 286.71, 0.23 -0.64" stroke="#1971c2" stroke-width="2.5" fill="none" stroke-dasharray="8 10"></path></g></svg>
