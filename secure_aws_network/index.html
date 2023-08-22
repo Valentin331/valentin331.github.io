@@ -1320,19 +1320,19 @@
 <li><a href="#6-conclusion">6. Conclusion</a></li>
 </ul>
 <h2 id="1-introduction">1. Introduction</h2>
-<p>This post will cover the problems, scenarios and methods of securing your instances in your AWS deployment using public and private subnets. Specifically it will cover the basics of VPCs (Virtual Private Cloud) and how you can leverage properties of a VPC together with different nodes in your network to secure your vulnerable machines from outside malicious users. We will cover different scenarios that might occur and the problems that arise with some configurations, and what tools we can leverage to create a secure network that minimizes attack surfaces.</p>
-<p>This post will not cover possible vulnerabilities that might arise from the deployed applications themselves, or architectural issues inside the network, but rather the communcation spaces of different areas and nodes inside the network, and the rules of communication between the Internet and the private network.</p>
+<p>This post will cover various methods for enhancing security for AWS instances through the strategic use of public and private subnets. We'll explore the foundational concepts of Virtual Private Clouds (VPCs) and demonstrate how you can harness the capabilities of a VPC in conjunction with various network nodes to shield your systems from external threats. Later chapters will cover various scenarios, pinpointing potential challenges and their solutions in certain configurations.</p>
+<p>Note that this article will focus exclusively on the communication channels between various network areas and nodes, as well as the rules governing interactions between the internet and the private network. Vulnerabilties stemming from the applications themselves or any other architectural issues will not be covered.</p>
 <h2 id="2-disclaimer">2. Disclaimer</h2>
-<p>This post will cover and mention some techniques in computer networks that the reader needs to have a high-level grasp on to follow the article well. Most of the basic concepts mentioned will be explained, and that level of understand is adequate to get the idea of the concepts mentioned but I encourage you to explore the basic ideas before diving into AWS and trying to replicate the deployments. </p>
-<p>As always, building your architecture one step at a time is more productive and will take less time then trying to have all features right from the get go.</p>
+<p>This article will touch upon several advanced techniques in computer networking that readers should have a foundational understanding of to fully grasp the content. While we will provide explanation for most basic concepts and provide definitions, the reader should familiarize themselves with any new concepts they come across to fully understand the content.</p>
+<p>Constructing your architecture incrementally often proves more efficient and less time-consuming than striving for a comprehensive build right from the get go.</p>
 <h2 id="2-introduction-to-vpcs-and-deploying-a-basic-instance">2. Introduction to VPCs and deploying a basic instance</h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Basic knowledge of computer networks is required.</p>
 </div>
 <h3 id="21-vpcs">2.1. VPCs</h3>
-<p>VPC (Virtual Private Cloud) is a virutal, private network you own via your AWS account. In contrast to real, physical machines, routers and switches it is virtually constructed, but the concepts remain the same. </p>
-<p>VPCs can be thought as real networks with the same features by which they provide a structured way to deploy your AWS instances. By default, it is a logically isolated network from the Internet and can be thought as a seperate network.</p>
+<p>VPC (Virtual Private Cloud) is a virutal private network you own via your AWS account. In contrast to real, physical machines, routers and switches it is virtually constructed, but the concepts remain the same. </p>
+<p>VPCs can be thought of as real networks with the same features by which they provide a structured way to deploy your AWS instances. By default, a VPC is logically isolated from the Internet effectively functioning as a separate network.</p>
 <p>The AWS network is a collection of Availability Zones, which are physically represented as data centers. They are interconnected and they form the AWS network. These AZs are then grouped into regions. When we put all this together, we can visually represent the different areas and overlaps like so:</p>
 <p><img alt="VPC basic visualisation" src="/blog/posts/secure_aws_network/aws_network.svg" /></p>
 <p>Visualisation shows a sample AWS region composed of three AZs. Inside the regions we have our private VPC that's spanning across three AZs (we can configure our VPC to reach one or more AZs). Using the internet gateway we can enable communication with the Internet (more on this later). </p>
@@ -1345,7 +1345,7 @@
 <p>Basic knowledge of IP addresses is required. Use the following <a href="https://docs.oracle.com/cd/E19504-01/802-5753/planning3-18471/index.html">link</a> to learn how IP addresses are comprised.</p>
 </div>
 <p>To keep things simple, we'll take only IPv4 addresses into account. Each IPv4 address consists of four 8 bit fields. Meaning the smallest address is 0.0.0.0 and the largest one is 255.255.255.255.</p>
-<p>This seperation of 4 distinct parts is very useful since we can easily subdevide our total IP range into sections. For example, we can say that some abstract distinct section of our network will have IP address range between 24.24.24.0 and 24.24.24.255. In this case the number of addresses this section has been assigned is 256 addresses.</p>
+<p>This separation of 4 distinct parts is very useful since we can easily subdivide our total IP range into sections. For example, we can say that some abstract distinct section of our network will have IP address range between 24.24.24.0 and 24.24.24.255. In this case the number of addresses this section has been assigned is 256 addresses.</p>
 <p>We need a simple, formal way of representing these ranges. Our written example is fine, but we can condense this information into a structured, standardized format that computers can also read.</p>
 <p>A CIDR block is a notation we can use to represent the IP ranges. Let's take a look at an example of a CIDR block:</p>
 <div class="arithmatex">\[25.25.25.0/24\]</div>
@@ -1356,13 +1356,13 @@
 <h4 id="222-subnets">2.2.2. Subnets</h4>
 <p>So far we have defined our VPC range. Referencing the image of above of defining a sample VPC space, we can notice different "subnets" inside the VPC.</p>
 <p>Subnets are a powerful concept of dividing our network into distinct parts. This is extremely useful since it helps us organize our nodes inside the network. </p>
-<p>Let us consider an example where we have multiple database nodes and multiple application nodes in our network. We will assign each node in the network it's own rules for accessing other parts of the network. As our network expands this would become exponentially more cumbersome and difficult to manage.</p>
-<p>Subnets allow us to set and define said rules of communcation and access to a certain range of our network, then all nodes inside the subnet will adhere to said rules. This greatly simplifies managing our nodes.</p>
+<p>Let us consider an example where we have multiple database nodes and multiple application nodes in our network. We will assign each node in the network its own rules for accessing other parts of the network. As our network expands this would become exponentially more cumbersome and difficult to manage.</p>
+<p>Subnets allow us to set and define these rules of communication and access to a specific range of our network; then all nodes inside the subnet will adhere to these rules. This greatly simplifies managing our nodes.</p>
 <h4 id="223-security-groups">2.2.3. Security groups</h4>
 <p>In addition to subnets, another pivotal aspect of securing our AWS architecture is the implementation of Security Groups. While subnets manage network segmentation, security groups take on the role of controlling inbound and outbound traffic at the instance level. They act as virtual firewalls that regulate the traffic allowed to and from instances associated with them.</p>
 <p>Security groups operate based on rules that explicitly permit or deny specific traffic flows. These rules can be defined in terms of allowed IP addresses, port ranges, and protocols. Unlike network access control lists (ACLs), which operate at the subnet level, security groups are associated with individual instances.</p>
 <p>By configuring security groups, you can create a strong defense mechanism to safeguard your instances from unauthorized access and potential security breaches. As you continue to explore the intricacies of AWS security, a comprehensive understanding of both subnets and security groups will be instrumental in designing a well-protected and robust environment for your applications.</p>
-<p>At this point we have introduced the vital tools of controlling network ranges and assigning communcation rules to those sub-ranges (subnets) and to the individual nodes themselves. Later we will apply these concepts on real world examples to see how to effectively use them to create a secure network.</p>
+<p>At this point we have introduced the vital tools of controlling network ranges and assigning communication rules to those sub-ranges (subnets) and to the individual nodes themselves. Later we will apply these concepts on real world examples to see how to effectively use them to create a secure network.</p>
 <h4 id="224-route-tables">2.2.4. Route tables</h4>
 <p>In the vast networking landscape of AWS, route tables play a central role in directing traffic flow. They contain a set of rules, called routes, that determine how traffic is forwarded between subnets, the internet, and other connected networks.</p>
 <p>Each subnet in a VPC must be associated with a route table, which dictates the traffic routing for the subnet. A VPC is created with a main route table by default, but additional custom route tables can also be created. When a subnet doesn't have an explicitly associated route table, it falls back to the main route table.</p>
@@ -1375,7 +1375,7 @@
 <p>The Domain Name System (DNS) translates user-friendly domain names (e.g., "www.example.com") into IP addresses that machines understand. Within a VPC in AWS, DNS resolution is automatically enabled, allowing instances to resolve domain names to their corresponding IP addresses. When EC2 instances are launched, they are assigned both private and public DNS hostnames, provided they're in a subnet set to assign public IPs. Keeping DNS resolution and hostnames enabled in a VPC is crucial for many applications, especially those dependent on DNS for communication.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>We have convered these concepts on a high-level and their implementation in a real AWS network are more complicated and introduce various little rules of application. In the later chapters we will create a real deployment and we will cover some of these, but I strongly recommend that you try to create these rules yourself. Be aware that full network configuration contains more rules and concepts.</p>
+<p>We have covered these concepts on a high-level and their implementation in a real AWS network are more complicated and introduce various little rules of application. In the later chapters we will create a real deployment and we will cover some of these, but I strongly recommend that you try to create these rules yourself. Be aware that full network configuration contains more rules and concepts.</p>
 </div>
 <h3 id="23-setting-up-a-basic-deployment">2.3. Setting up a basic deployment</h3>
 <p>Let's create a simple deployment containing a database and a backend application.</p>
@@ -1390,7 +1390,7 @@
 <p>After creating the VPC we'll create just one public subnet where our instances will live. We'll use CIDR block 24.24.1.0/24.</p>
 <p><img alt="Creating the initial subnet" src="/blog/posts/secure_aws_network/vpc_inital_subnet_1.png" /></p>
 <h4 id="234-making-the-subnets-public-route-tables-and-internet-gateways">2.3.4. Making the subnets public (route tables and Internet gateways)</h4>
-<p>By default, all created subnets are private since they don't have access to the Internet. This is due to the default route table, which sets the rules for communcation for the subnet.</p>
+<p>By default, all created subnets are private since they don't have access to the Internet. This is due to the default route table, which sets the communication rules for the subnet.</p>
 <p>Firstly, let's create an Internet Gateway and assign it to our VPC.</p>
 <p><img alt="Creating the IG" src="/blog/posts/secure_aws_network/ig-1.png" /></p>
 <p><img alt="Assigning the IG to our VPC" src="/blog/posts/secure_aws_network/attach-ig-1.png" /></p>
@@ -1408,7 +1408,7 @@
 <p>So far, we have the following configuration:</p>
 <p><img alt="Initial VPC empty configuration" src="/blog/posts/secure_aws_network/initial_deployment.svg" /></p>
 <h4 id="232-creating-our-managed-backend-application">2.3.2. Creating our managed backend application</h4>
-<p>Now let's create our managed backend instances. The node itself that will live in our VPC is a Linux EC2 instance, but we will use Elastic Beanstalk service to manage our instances.</p>
+<p>Let's create our managed backend instances. The node itself that will live in our VPC is a Linux EC2 instance, but we will use Elastic Beanstalk service to manage our instances.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Elastic Beanstalk is an AWS service for managing and configuring various other AWS services, mainly used to orchestrate Linux machines. Learn more about it <a href="https://aws.amazon.com/elasticbeanstalk/">here</a>.</p>
@@ -1423,18 +1423,18 @@
 <p><img alt="EB deployed" src="/blog/posts/secure_aws_network/eb_deployed.png" /></p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>You may possibly encounter an issue while deploying the envoriment with misconfigured service roles. Take a look at this <a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-instanceprofile.html">link</a> for more information. <strong>Dont forget to select the instance profile!</strong></p>
+<p>You may possibly encounter an issue while deploying the environment with misconfigured service roles. Take a look at this <a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-instanceprofile.html">link</a> for more information. <strong>Dont forget to select the instance profile!</strong></p>
 </div>
 <h4 id="233-creating-our-database-instance">2.3.3. Creating our database instance</h4>
-<p>To demonstrate a basic deployment of a database, we will deploy an instance running a a relational database software. AWS provides a service for doing exactly that, called RDS (Relational Database Service). RDS wizard requires that RDS instances live in a subnet spread across two availability zones. Specifically we're required to create a <a href="">subnet group</a>.</p>
-<p>So far we have created only one public subnet. Navigate to the VPC service and creat another public subnet. <strong>Make sure it's placed in a different AZ compared to the first public subnet!</strong> Now that we have two public subnets in different AZs, navigate to RDS service and create a database subnet group that includes these two subnets.</p>
+<p>To demonstrate a basic deployment of a database, we will deploy an instance running a relational database software. AWS provides a service for doing exactly that, called RDS (Relational Database Service). RDS wizard requires that RDS instances live in a subnet spread across two availability zones. Specifically we're required to create a <a href="">subnet group</a>.</p>
+<p>So far we have created only one public subnet. Navigate to the VPC service and create another public subnet. <strong>Make sure it's placed in a different AZ compared to the first public subnet!</strong> Now that we have two public subnets in different AZs, navigate to RDS service and create a database subnet group that includes these two subnets.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Remember to assign the correct route table to the subnet, otherwise no traffic from the Internet can pass through to the instance.</p>
 </div>
 <p><img alt="2nd subnet" src="/blog/posts/secure_aws_network/subnet-2.png" /></p>
 <p><img alt="creating the subnet group" src="/blog/posts/secure_aws_network/db-subnet-groups-1.png" /></p>
-<p>Now we're ready to finally create our database instance. Navigate to the RDS service and launch the instance creation wizard. Make sure to properly configure the connectivity settings, including the correct VPC and subnet group. Make sure to check enable <em>Public access</em>.</p>
+<p>Now we're ready to finally create the database instance. Navigate to the RDS service and launch the <em>instance creation wizard</em>. Make sure to properly configure the connectivity settings, including the correct VPC and subnet group. Make sure to enable <em>Public access</em>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For testing purposes I recommend using the <em>free tier</em> preset for instance class and storage.</p>
@@ -1450,12 +1450,12 @@
 <h3 id="31-principle-of-least-privilege">3.1. Principle of least privilege</h3>
 <h4 id="311-explanation">3.1.1. Explanation</h4>
 <p>The Principle of Least Privilege (PoLP) dictates that in a computing environment, all nodes, modules, processes, users, or programs should have access only to the precise information required to execute their tasks. By confining privileges and access rights, we inherently limit the potential vulnerabilities of our system. This is a very powerful concept for minimizing possible attack surfaces our system design might leave open.</p>
-<p>Imagine a network comprising several nodes. If an attacker compromises one node, the extent of their reach largely depends on the privileges associated with that node.  Considering the principle of least privilage and applying it to our network, the intruder's access is limited, since they can potentially have access to a minimal amount of information in our network, as opposed to the scenario where nodes have unrestricted access, granting the attacker access tothe entirety of our network.</p>
-<p>This idea can be taken as far as you want, for instance specify rules for read-only or write-only action.</p>
+<p>Imagine a network comprising several nodes. If an attacker compromises one node, the extent of their reach largely depends on the privileges associated with that node.  Considering the principle of least privilege and applying it to our network, the intruder's access is limited, since they can potentially access only a minimal amount of information. This contrasts with a scenario where nodes have unrestricted access, granting the attacker access to the entirety of our network.</p>
+<p>This idea can be taken as far as you want; for instance, you can specify rules for read-only or write-only actions.</p>
 <h4 id="312-examples">3.1.2. Examples</h4>
-<p><strong>User Accounts on Operating Systems</strong>: On most operating systems, there are user accounts with varying privileges. Typically, there are administrator accounts with full system access and standard user accounts with limited access. If a standard user account is compromised, the attacker can't make system-wide changes. This limitation is due to PoLP; the standard account only has the necessary privileges to run applications and not to modify system settings.</p>
+<p><strong>User Accounts on Operating Systems</strong>: On most operating systems, there are user accounts with varying privileges. Typically, there are administrator accounts with full system access and standard user accounts with limited access. If a standard user account is compromised, the attacker can't make system-wide changes. This limitation is due to the PoLP; the standard account only has the necessary privileges to run applications and not to modify system settings.</p>
 <p><strong>Database Management</strong>: In a database system, not all users need the ability to edit or delete tables. Some might only require read-only access, while others might need more comprehensive permissions for data entry. By tailoring access to individual roles, you can ensure that even if a read-only account gets compromised, the attacker cannot alter the database's data or structure.</p>
-<p><strong>Web Applications</strong>: Consider a web application where users can view, post, and edit content. While every user can view posts, perhaps only the original poster can edit or delete their own content. Implementing PoLP ensures that even if a user's session is hijacked, the malicious actor can only affect the content associated with that specific user and not content from other users.</p>
+<p><strong>Web Applications</strong>: Consider a web application where users can view, post, and edit content. While every user can view posts, perhaps only the original poster can edit or delete their own content. Implementing the PoLP ensures that even if a user's session is hijacked, the malicious actor can only affect the content associated with that specific user and not content from other users.</p>
 <h2 id="4-fixing-the-mistakes-new-architecture">4. Fixing the mistakes (new architecture)</h2>
 <p>So far we have created a working deployment and we have explained the security risks associated with it. Now we'll introduce new concepts in computer networking and apply them to create a secure environment for our applications. We will be sticking to an example of an application deployment and a database deployment.</p>
 <h3 id="41-backend-load-balancing-the-backend-nat">4.1. Backend: Load-balancing the backend + NAT</h3>
@@ -1510,7 +1510,7 @@
 <p class="admonition-title">Note</p>
 <p>A jump host configuration is not an ideal approach, but it's a great learning example to grasp different traffic rules and the idea of protecting network instances. It is a potential point of vulnerability as it's exposed to the internet. It's crucial to harden its security, apply timely patches, and follow best practices to minimize risks.</p>
 </div>
-<p>A jump host (or <em>bastion host</em>) is a special-purpose node (computer, virutal machine) in a computer network configured to withstand attacks and act as a gateway to access resources inside a private network from the external world. </p>
+<p>A jump host (or <em>bastion host</em>) is a special-purpose node (computer, virtual machine) in a computer network configured to withstand attacks and act as a gateway to access resources inside a private network from the external world. </p>
 <p>In this context, we'll utilize the jump host as a bridge to connect to our RDS instance situated in a private subnet.</p>
 <p>We'll configure our jump host as a Linux machine using the EC2 service. We'll launch a simple EC2 instance in the public subnet, exposed to the Internet. By configuring the SSH keys an outside user will be able to securely connect to a public node in our network, from which they'll be able to access protected nodes.</p>
 <div class="admonition note">
